@@ -37,9 +37,4 @@ Technologies Used:
 
 
 
-          
 
-
-
-
-- [DEMO LINK](https://seriuksergii.github.io/react-todo/)
