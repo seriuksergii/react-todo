@@ -1,17 +1,16 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable jsx-a11y/control-has-associated-label */
-import { Dispatch, FC, FormEvent, SetStateAction, useState } from 'react'; // Імпорт необхідних бібліотек React
-import classNames from 'classnames'; // Імпорт бібліотеки для генерації класів CSS
+import { Dispatch, FC, FormEvent, SetStateAction, useState } from 'react';
+import classNames from 'classnames';
 
-import { Todo } from '../../types/Todo'; // Імпорт типу Todo
+import { Todo } from '../../types/Todo';
 
 interface Props {
-  todo: Todo; // Об'єкт todo, який відображатиметься
-  onDelete?: (todoId: number) => void; // Опціональна функція для видалення todo за її ідентифікатором
-  onToggle?: (todo: Todo) => void; // Опціональна функція для зміни статусу todo (виконано/не виконано)
-  isLoading: boolean; // Прапорець, що показує, чи триває завантаження для todo
-  onRename?: (todo: Todo) => Promise<void>; // Опціональна асинхронна функція для зміни назви todo
-  setIdsProccesing?: Dispatch<SetStateAction<number[]>>; // Опціональна функція для зміни масиву ідентифікаторів в процесі обробки
+  todo: Todo;
+  onDelete?: (todoId: number) => void;
+  onToggle?: (todo: Todo) => void;
+  isLoading: boolean;
+  onRename?: (todo: Todo) => Promise<void>;
+  setIdsProccesing?: Dispatch<SetStateAction<number[]>>;
 }
 
 export const TodoItem: FC<Props> = ({
@@ -22,39 +21,35 @@ export const TodoItem: FC<Props> = ({
   onRename,
   setIdsProccesing,
 }) => {
-  const [isRenaming, setIsRenaming] = useState(false); // Стан для відображення режиму редагування назви todo
-  const [newTitle, setNewTitle] = useState(''); // Стан для збереження нової назви todo
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
 
-  // Функція для обробки події відправки форми при редагуванні назви todo
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedNewTitle = newTitle.trim();
 
-    // Якщо нова назва дорівнює поточній, завершити редагування
     if (trimmedNewTitle === todo.title) {
       setIsRenaming(false);
 
       return;
     }
 
-    // Якщо нова назва порожня, викликати функцію видалення todo
     if (!trimmedNewTitle) {
       onDelete?.(todo.id);
 
       return;
     }
 
-    // Викликати функцію для зміни назви todo з новою назвою
     onRename?.({ ...todo, title: trimmedNewTitle })
-      ?.then(() => setIsRenaming(false)) // При успішній зміні назви закрити режим редагування
-      .catch(() => {}) // Обробка помилки при зміні назви (не реалізовано в даному прикладі)
+      ?.then(() => setIsRenaming(false))
+      .catch(() => {})
       .finally(() => {
-        setIdsProccesing?.(current => current.filter(id => id !== todo.id)); // Видалення ідентифікатора todo з масиву обробки
+        setIdsProccesing?.(current => current.filter(id => id !== todo.id));
       });
   };
 
-  const { id, completed, title } = todo; // Деструктуризація todo на окремі поля
+  const { id, completed, title } = todo;
 
   return (
     <div
@@ -69,15 +64,15 @@ export const TodoItem: FC<Props> = ({
           type="checkbox"
           className="todo__status"
           checked={completed}
-          onChange={() => onToggle?.(todo)} // Обробка зміни статусу todo
+          onChange={() => onToggle?.(todo)}
         />
       </label>
 
-      {isRenaming ? ( // Відображення форми для редагування назви todo, якщо активовано режим редагування
+      {isRenaming ? (
         <form
           onSubmit={handleSubmit}
-          onBlur={handleSubmit} // Обробка виходу з фокусу поля вводу
-          onKeyUp={e => (e.key === 'Escape' ? setIsRenaming(false) : '')} // Обробка клавіші Escape для виходу з режиму редагування
+          onBlur={handleSubmit}
+          onKeyUp={e => (e.key === 'Escape' ? setIsRenaming(false) : '')}
         >
           <input
             autoFocus
@@ -86,20 +81,18 @@ export const TodoItem: FC<Props> = ({
             className="todo__title-field"
             placeholder="Empty todo will be deleted"
             value={newTitle}
-            onChange={event => setNewTitle(event.target.value)} // Обробка зміни значення поля вводу
+            onChange={event => setNewTitle(event.target.value)}
           />
         </form>
       ) : (
         <>
           {' '}
-          {/* Відображення назви todo і кнопки видалення, якщо режим редагування не активовано */}
           <span
             data-cy="TodoTitle"
             className="todo__title"
             onDoubleClick={() => {
-              // Обробка подвійного кліку для активації режиму редагування
-              setNewTitle(title); // Встановлення поточної назви todo в поле редагування
-              setIsRenaming(true); // Активація режиму редагування
+              setNewTitle(title);
+              setIsRenaming(true);
             }}
           >
             {title}
@@ -108,7 +101,7 @@ export const TodoItem: FC<Props> = ({
             type="button"
             className="todo__remove"
             data-cy="TodoDelete"
-            onClick={() => onDelete?.(id)} // Обробка кліку на кнопку видалення todo
+            onClick={() => onDelete?.(id)}
           >
             ×
           </button>
@@ -117,7 +110,7 @@ export const TodoItem: FC<Props> = ({
 
       <div
         data-cy="TodoLoader"
-        className={`modal overlay ${isLoading && 'is-active'}`} // Показ модального вікна з завантаженням, якщо todo в процесі обробки
+        className={`modal overlay ${isLoading && 'is-active'}`}
       >
         <div className="modal-background has-background-white-ter" />
         <div className="loader" />

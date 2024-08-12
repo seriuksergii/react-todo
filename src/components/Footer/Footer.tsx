@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { FC } from 'react';
 import cn from 'classnames';
 import pluralize from 'pluralize';
@@ -5,11 +6,11 @@ import pluralize from 'pluralize';
 import { Status } from '../../types/statusTypes';
 
 interface Props {
-  activeTodosCount: number; // Кількість активних todos
-  filter: Status; // Поточний статус фільтра
-  setFilter: (status: Status) => void; // Функція для зміни статусу фільтра
-  onClear: () => void; // Функція для видалення завершених todos
-  canClearAllVisible: boolean; // Прапорець, що показує, чи є завершені todos для видалення
+  activeTodosCount: number;
+  filter: Status;
+  setFilter: (status: Status) => void;
+  onClear: () => void;
+  canClearAllVisible: boolean;
 }
 
 export const Footer: FC<Props> = ({
