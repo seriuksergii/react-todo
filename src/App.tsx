@@ -21,17 +21,15 @@ export const App: FC = () => {
 
   const ref = useRef<HTMLInputElement | null>(null);
 
-  // Запит на сервер за списком todos при завантаженні компонента
   useEffect(() => {
-    ref.current?.focus(); // Фокус на полі введення після завантаження
+    ref.current?.focus();
 
     todoService
       .getTodos()
-      .then(setTodos) // Оновлення стану todos з отриманими даними
-      .catch(() => setErrorMessage(Errors.LOAD)); // Виведення помилки при невдалому запиті
+      .then(setTodos)
+      .catch(() => setErrorMessage(Errors.LOAD));
   }, []);
 
-  // Обробка помилок: автоматичне видалення повідомлення про помилку через 3 секунди
   useEffect(() => {
     if (!errorMessage) {
       return;
@@ -42,7 +40,6 @@ export const App: FC = () => {
     return () => clearTimeout(timeout);
   }, [errorMessage]);
 
-  // Фільтрація todos відповідно до вибраного статусу (активні, завершені або всі)
   const activeTodos = todos.filter(todo => !todo.completed);
   const completedTodos = todos.filter(todo => todo.completed);
 
@@ -56,20 +53,19 @@ export const App: FC = () => {
     }
   };
 
-  // Додавання нового todo
   const handleAddTodo = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const normalizedTitle = title.trim();
 
     if (!normalizedTitle) {
-      setErrorMessage(Errors.TITLE); // Показ помилки, якщо поле введення порожнє
+      setErrorMessage(Errors.TITLE);
 
       return;
     }
 
     if (ref.current) {
-      ref.current.disabled = true; // Вимкнення поля введення під час додавання todo
+      ref.current.disabled = true;
     }
 
     const newTodo = {
@@ -78,55 +74,52 @@ export const App: FC = () => {
       completed: false,
     };
 
-    setTempTodo({ ...newTodo, id: 0 }); // Відображення тимчасового todo перед підтвердженням додавання
+    setTempTodo({ ...newTodo, id: 0 });
 
     todoService
       .handleAddTodo(newTodo)
       .then((resTodo: Todo) => {
-        setTodos(currentTodos => [...currentTodos, resTodo]); // Додавання нового todo в список
-        setTitle(''); // Очистка поля введення
+        setTodos(currentTodos => [...currentTodos, resTodo]);
+        setTitle('');
       })
       .catch(() => {
-        setErrorMessage(Errors.ADD); // Обробка помилки додавання todo
+        setErrorMessage(Errors.ADD);
       })
       .finally(() => {
         if (ref.current) {
-          ref.current.disabled = false; // Увімкнення поля введення після завершення операції
+          ref.current.disabled = false;
         }
 
-        setTempTodo(null); //Скасування відображення тимчасового todo
-        ref.current?.focus(); // Повернення фокусу на поле введення
+        setTempTodo(null);
+        ref.current?.focus();
       });
   };
 
-  // Видалення todo за її id
   const onDelete = (todoId: number) => {
-    setIdsProccesing(current => [...current, todoId]); // Додавання id todo до списку оброблених
+    setIdsProccesing(current => [...current, todoId]);
 
     todoService
       .onDelete(todoId)
       .then(() => {
         setTodos(currentTodos =>
           currentTodos.filter(todo => todo.id !== todoId),
-        ); // Видалення todo зі списку після успішного видалення на сервері
+        );
       })
       .catch(() => {
-        setErrorMessage(Errors.DELETE); // Обробка помилки видалення todo
+        setErrorMessage(Errors.DELETE);
       })
       .finally(() => {
-        setIdsProccesing(current => current.filter(id => id !== todoId)); // Видалення id todo зі списку оброблених
-        ref.current?.focus(); // Повернення фокусу на поле введення
+        setIdsProccesing(current => current.filter(id => id !== todoId));
+        ref.current?.focus();
       });
   };
 
-  // Очищення завершених todos
   const onClear = () => {
-    completedTodos.forEach(todo => onDelete(todo.id)); // Видалення кожної завершеної todo
+    completedTodos.forEach(todo => onDelete(todo.id));
   };
 
-  // Перемикання стану todo (активна/завершена)
   const onToggle = (todo: Todo) => {
-    setIdsProccesing(current => [...current, todo.id]); // Додавання id todo до списку оброблених
+    setIdsProccesing(current => [...current, todo.id]);
 
     todoService
       .updateTodo({ ...todo, completed: !todo.completed })
@@ -135,17 +128,16 @@ export const App: FC = () => {
           currentTodos.map(currentTodo =>
             currentTodo.id === updatedTodo.id ? updatedTodo : currentTodo,
           ),
-        ); // Оновлення todo після успішного оновлення на сервері
+        );
       })
-      .catch(() => setErrorMessage(Errors.UPDATE)) //Обробка помилки оновлення todo
+      .catch(() => setErrorMessage(Errors.UPDATE))
       .finally(() => {
-        setIdsProccesing(current => current.filter(id => id !== todo.id)); // Видалення id todo зі списку оброблених
+        setIdsProccesing(current => current.filter(id => id !== todo.id));
       });
   };
 
-  // Перейменування todo
   const onRename = (todo: Todo) => {
-    setIdsProccesing(current => [...current, todo.id]); // Додавання id todo до списку оброблених
+    setIdsProccesing(current => [...current, todo.id]);
 
     return todoService
       .updateTodo({ ...todo })
@@ -154,32 +146,28 @@ export const App: FC = () => {
           currentTodos.map(currentTodo =>
             currentTodo.id === updatedTodo.id ? updatedTodo : currentTodo,
           ),
-        ); // Оновлення todo після успішного оновлення на сервері
+        );
       })
       .catch(() => {
-        setErrorMessage(Errors.UPDATE); // Обробка помилки оновлення todo
+        setErrorMessage(Errors.UPDATE);
         throw new Error();
       });
   };
 
-  // Перемикання стану всіх todos
   const updateAllToggleStatus = () => {
     if (activeTodos.length) {
-      activeTodos.forEach(onToggle); // Позначення всіх активних todos як завершені
+      activeTodos.forEach(onToggle);
     } else {
-      completedTodos.forEach(onToggle); // Позначення всіх завершених todos як активні
+      completedTodos.forEach(onToggle);
     }
   };
 
-  // Визначення видимості кнопки переключення стану всіх todos
   const isToggleVisible = !activeTodos.length;
 
-  // Перевірка, чи є користувач залогований
   if (!USER_ID) {
-    return <UserWarning />; // Відображення повідомлення про необхідність увійти в систему
+    return <UserWarning />;
   }
 
-  // Відображення заголовку, форми введення нового todo, списку todos та футера з фільтрами
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
